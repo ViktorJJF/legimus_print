@@ -2,7 +2,7 @@
   "name": "legimus-print",
   "displayName": "Legimus Print Python JS",
   "description": "Easy prints for python and Javascript",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -34,6 +34,10 @@
       {
         "command": "extension.consoleLogVariableWithSeparator",
         "title": "Legimus Print: Console log variable with separator"
+      },
+      {
+        "command": "extension.consoleLogVariable",
+        "title": "Legimus Print: Console log variable"
       }
     ],
     "keybindings": [
@@ -55,6 +59,11 @@
       {
         "command": "extension.consoleLogVariableWithSeparator",
         "key": "ctrl+alt+e",
+        "when": "editorTextFocus && (editorLangId == javascript || editorLangId == typescript || editorLangId == vue)"
+      },
+      {
+        "command": "extension.consoleLogVariable",
+        "key": "ctrl+alt+w",
         "when": "editorTextFocus && (editorLangId == javascript || editorLangId == typescript || editorLangId == vue)"
       }
     ]

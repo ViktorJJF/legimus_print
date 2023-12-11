@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const separator = `print("****************************************")\n`;
 
-  const separatorJS = `console.log("****************************************");\n`;
+  const separatorJS = `console.log('****************************************');\n`;
 
   let printSeparatorDisposable = vscode.commands.registerCommand(
     "extension.printSeparator",
@@ -102,15 +102,65 @@ export function activate(context: vscode.ExtensionContext) {
             const text = editor.document.getText(selection);
             const line = selection.end.line;
             const newPosition = new vscode.Position(line + 1, 0);
-            // Determine the indentation of the current line
             const indentation =
               editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
             const indentationString = " ".repeat(indentation);
 
             // Insert separator, variable print statement, and another separator, each on new lines
+            const printStatement = `${indentationString}print("🐛 ${text}", ${text})\n`;
+            const separatorLine = `${indentationString}${separator}\n`;
+
             editBuilder.insert(
               newPosition,
-              `${indentationString}${separator}print("🐛 ${text}", ${text})\n${indentationString}${separator}`
+              separatorLine + printStatement + separatorLine
+            );
+          });
+        },
+        { undoStopBefore: true, undoStopAfter: false }
+      );
+
+      // Set a second undo stop after the text insertion
+      editor.edit(() => {}, { undoStopBefore: false, undoStopAfter: true });
+    }
+  );
+
+  let printLogDisposable = vscode.commands.registerCommand(
+    "extension.consoleLogVariable",
+    async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showInformationMessage("No editor is active");
+        return;
+      }
+
+      // Check if the language of the current file is JavaScript, TypeScript, or Vue
+      const validLanguages = ["javascript", "typescript", "vue"];
+      if (!validLanguages.includes(editor.document.languageId)) {
+        vscode.window.showInformationMessage(
+          "This command is only available for JavaScript, TypeScript, and Vue files"
+        );
+        return;
+      }
+
+      const document = editor.document;
+      const selections = editor.selections; // Get all selections
+
+      await editor.edit(
+        (editBuilder) => {
+          selections.forEach((selection) => {
+            const text = document.getText(selection);
+            // Find the end position of the multi-line selection or the current line
+            const endLine = selection.isSingleLine
+              ? selection.end.line
+              : selection.end.line;
+            const newPosition = new vscode.Position(endLine + 1, 0);
+            const indentation =
+              document.lineAt(endLine).firstNonWhitespaceCharacterIndex;
+            const indentationString = " ".repeat(indentation);
+
+            editBuilder.insert(
+              newPosition,
+              `${indentationString}console.log('🐛 ${text}', ${text})\n`
             );
           });
         },
@@ -145,16 +195,22 @@ export function activate(context: vscode.ExtensionContext) {
         (editBuilder) => {
           selections.forEach((selection) => {
             const text = editor.document.getText(selection);
-            const line = selection.end.line;
-            const newPosition = new vscode.Position(line + 1, 0);
+            // Find the end position of the multi-line selection or the current line
+            const endLine = selection.isSingleLine
+              ? selection.end.line
+              : selection.end.line;
+            const newPosition = new vscode.Position(endLine + 1, 0);
             const indentation =
-              editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+              editor.document.lineAt(endLine).firstNonWhitespaceCharacterIndex;
             const indentationString = " ".repeat(indentation);
 
             // Insert separator, variable print statement, and another separator, each on new lines
+            const logStatement = `${indentationString}console.log('🦎 ${text}', ${text})\n`;
+            const separatorLine = `${indentationString}${separatorJS}\n`;
+
             editBuilder.insert(
               newPosition,
-              `${indentationString}${separatorJS}console.log('🦎 ${text}', ${text})\n${indentationString}${separatorJS}`
+              separatorLine + logStatement + separatorLine
             );
           });
         },
@@ -166,6 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  context.subscriptions.push(printLogDisposable);
   context.subscriptions.push(printCombinedDisposable);
   context.subscriptions.push(disposable, printSeparatorDisposable);
   context.subscriptions.push(disposable, printCombinedDisposableJS);
