@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("Initial legimus print");
   let disposable = vscode.commands.registerCommand(
     "extension.printVariable",
     async () => {
