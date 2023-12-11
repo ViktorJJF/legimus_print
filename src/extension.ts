@@ -26,8 +26,15 @@ export function activate(context: vscode.ExtensionContext) {
           selections.forEach((selection) => {
             const text = document.getText(selection);
             const line = selection.active.line;
+            // Determine the indentation of the current line
+            const indentation =
+              editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+            const indentationString = " ".repeat(indentation);
             const newPosition = new vscode.Position(line + 1, 0);
-            editBuilder.insert(newPosition, `print("🐛 ${text}", ${text})\n`);
+            editBuilder.insert(
+              newPosition,
+              `${indentationString}print("🐛 ${text}", ${text})\n`
+            );
           });
         },
         { undoStopBefore: true, undoStopAfter: false }
@@ -63,7 +70,10 @@ export function activate(context: vscode.ExtensionContext) {
       const newPosition = new vscode.Position(line + 1, 0);
 
       editor.edit((editBuilder) => {
-        editBuilder.insert(newPosition, separator);
+        const lineIndentation =
+          editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+        const indentationString = " ".repeat(lineIndentation);
+        editBuilder.insert(newPosition, `${indentationString}${separator}`);
       });
     }
   );
@@ -92,11 +102,15 @@ export function activate(context: vscode.ExtensionContext) {
             const text = editor.document.getText(selection);
             const line = selection.end.line;
             const newPosition = new vscode.Position(line + 1, 0);
+            // Determine the indentation of the current line
+            const indentation =
+              editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+            const indentationString = " ".repeat(indentation);
 
             // Insert separator, variable print statement, and another separator, each on new lines
             editBuilder.insert(
               newPosition,
-              `${separator}print("🐛 ${text}", ${text})\n${separator}`
+              `${indentationString}${separator}print("🐛 ${text}", ${text})\n${indentationString}${separator}`
             );
           });
         },
@@ -133,11 +147,14 @@ export function activate(context: vscode.ExtensionContext) {
             const text = editor.document.getText(selection);
             const line = selection.end.line;
             const newPosition = new vscode.Position(line + 1, 0);
+            const indentation =
+              editor.document.lineAt(line).firstNonWhitespaceCharacterIndex;
+            const indentationString = " ".repeat(indentation);
 
             // Insert separator, variable print statement, and another separator, each on new lines
             editBuilder.insert(
               newPosition,
-              `${separatorJS}console.log('🦎 ${text}', ${text})\n${separatorJS}`
+              `${indentationString}${separatorJS}console.log('🦎 ${text}', ${text})\n${indentationString}${separatorJS}`
             );
           });
         },
